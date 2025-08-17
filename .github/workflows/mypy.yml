@@ -37,6 +37,7 @@ jobs:
         shell: bash
         run: |
           uv --version
+          uv venv
           uv pip install -e ".[dev]"
 
       - name: Mypy
