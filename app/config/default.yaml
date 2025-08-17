@@ -1,0 +1,43 @@
+models:
+  generation: ${env:GEN_MODEL,gpt-5-nano}
+  embedding: ${env:EMB_MODEL,text-embedding-3-small}
+  offline: ${env:OFFLINE_MODE,false}
+
+retrieval:
+  top_k: 6
+  bm25_k: 20
+  dense_k: 20
+  rrf_k: 10                 # RRF constant in 1/(k + rank); higher damps tail influence
+  rrf_weight_bm25: 0.5      # Weight for BM25 list(s) in fusion; higher favors lexical matches
+  rrf_weight_dense: 0.5     # Weight for dense list(s) in fusion; higher favors semantic matches
+  multi_query_n: 1          # Total queries fused (original + rewrites). 1 disables multi-query
+  rerank: true
+  rerank_top_n: 6
+  rerank_strategy: mmr
+  mmr_lambda: 0.5
+  rerank_model: BAAI/bge-reranker-v2-m3
+  rerank_device: cpu
+  rerank_batch_size: 16
+  recency_filter_days: 0
+  recency_decay_lambda: 0.0
+
+index:
+  chunk_size: 800
+  overlap: 120
+  semantic_chunking_enabled: false
+
+ingest:
+  default_workers: 4
+
+generator:
+  provider: openai  # openai|ollama|stub
+  model: gpt-5-nano
+  ollama_model: llama3.1:8b
+  timeout_s: 30
+
+memory:
+  window_size: 6
+  summarize: true
+
+metrics:
+  ragas_full: false

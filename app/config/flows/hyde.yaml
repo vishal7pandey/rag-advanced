@@ -1,0 +1,13 @@
+flow: hyde
+params:
+  # Base dense retrieval size for the original question
+  k_base: 12
+  # HyDE retrieval size for the hypothetical paragraph
+  k_hyde: 12
+  # Final cutoff after fusion + dedupe
+  top_k_final: 10
+  # Reciprocal Rank Fusion parameter
+  rrf_k: 60
+  # Optional reranker
+  rerank: false
+  rerank_top_n: 6

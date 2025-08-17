@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rag-advanced
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        shell: bash
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install project (dev,offline)
+        shell: bash
+        run: |
+          uv --version
+          uv pip install -e ".[dev,offline]"
+
+      - name: Ruff
+        shell: bash
+        run: uv run ruff check .
+
+      - name: Mypy
+        shell: bash
+        run: uv run mypy app
+
+      - name: Pytest (offline)
+        shell: bash
+        env:
+          OFFLINE_MODE: 'true'
+        run: uv run pytest -q
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: rag-advanced
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        shell: powershell
+        run: |
+          irm https://astral.sh/uv/install.ps1 | iex
+          "$env:USERPROFILE\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Install project (dev,offline)
+        shell: powershell
+        env:
+          UV_LINK_MODE: copy
+        run: |
+          uv --version
+          uv pip install -e ".[dev,offline]"
+
+      - name: Ruff
+        shell: powershell
+        run: uv run ruff check .
+
+      - name: Mypy
+        shell: powershell
+        run: uv run mypy app
+
+      - name: Pytest (offline)
+        shell: powershell
+        env:
+          OFFLINE_MODE: 'true'
+          UV_LINK_MODE: copy
+        run: uv run pytest -q

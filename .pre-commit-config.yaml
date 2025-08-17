@@ -1,0 +1,44 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Match a modern Ruff; works with your pyproject [tool.ruff]
+    rev: v0.6.3
+    hooks:
+      - id: ruff
+        name: ruff (lint)
+        args: ["--fix"]  # auto-fix safe issues
+      - id: ruff-format
+        name: ruff (format)
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    # Align with your dev dependency >=1.10.0
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: []
+        # mypy reads [tool.mypy] from pyproject.toml
+
+  # Optional: run tests on pre-push to keep commits fast
+  - repo: local
+    hooks:
+      - id: pytest-pre-push
+        name: pytest (pre-push)
+        entry: pytest -q
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]

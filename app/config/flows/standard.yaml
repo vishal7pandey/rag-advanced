@@ -1,0 +1,4 @@
+flow: standard
+params:
+  top_k: 6
+  rerank: false

@@ -1,0 +1,23 @@
+# Normalize all text files to LF in repo; convert to OS-native on checkout if needed
+* text=auto eol=lf
+
+# Shell scripts stay LF
+*.sh text eol=lf
+
+# Windows scripts stay CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Mark common binary types
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.pt binary
+*.onnx binary
+*.bin binary
+*.h5 binary
+*.safetensors binary
+*.faiss binary

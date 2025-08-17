@@ -1,0 +1,8 @@
+# Minimal RAPTOR flow defaults (scaffold)
+levels: 2
+fanout: 4
+# final context size to answer from
+top_k_final: 8
+# optional reranking
+rerank: false
+rerank_top_n: 6

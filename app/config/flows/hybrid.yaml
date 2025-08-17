@@ -1,0 +1,10 @@
+flow: hybrid
+params:
+  bm25_k: 20
+  dense_k: 20
+  rrf_k: 10
+  rerank: false
+  multi_query_n: 1
+  weights:
+    bm25: 0.5
+    dense: 0.5

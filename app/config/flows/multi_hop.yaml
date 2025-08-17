@@ -1,0 +1,8 @@
+flow: multi_hop
+params:
+  subq_max: 3
+  k_each: 5
+  top_k_final: 8
+  rrf_k: 60
+  rerank: false
+  rerank_top_n: 6

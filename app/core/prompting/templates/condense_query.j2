@@ -1,0 +1,11 @@
+Generate the minimal set of atomic sub-questions needed to answer the user's request.
+- Keep each sub-question self-contained and answerable from a single source.
+- Preserve key entities, constraints, dates, and units from the original.
+  - Example: keep numeric ranges intact (e.g., "between 2019 and 2021").
+- Resolve pronouns/coreference (e.g., replace "he", "there" with explicit entities/places).
+- Prefer short, search-ready phrasing (roughly 5–12 words).
+- If the request is single-hop, return just one concise search query.
+- OUTPUT FORMAT: return only the sub-questions, one per line, each starting with "- ". No numbering, headers, or commentary.
+
+Original question:
+{{ question }}
