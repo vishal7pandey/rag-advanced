@@ -3,8 +3,8 @@ name: Mypy (quick)
 on:
   push:
     paths:
-      - 'rag-advanced/app/**/*.py'
-      - 'rag-advanced/pyproject.toml'
+      - 'app/**/*.py'
+      - 'pyproject.toml'
       - '.github/workflows/mypy.yml'
   pull_request:
 
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: rag-advanced
+        working-directory: .
     steps:
       - name: Checkout
         uses: actions/checkout@v4
