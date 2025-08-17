@@ -5,7 +5,7 @@ import re
 import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, MutableMapping, Mapping, Callable
 
 import structlog
 from structlog.contextvars import merge_contextvars, bind_contextvars, clear_contextvars
@@ -78,12 +78,27 @@ def configure_logging(
 
     root.handlers = handlers
 
-    processors = [
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        merge_contextvars,
-        _redact_and_sanitize,
-        structlog.processors.JSONRenderer(),
+    def _redact_processor(
+        logger: Any, method_name: str, event_dict: MutableMapping[str, Any]
+    ) -> Mapping[str, Any]:
+        # Delegate to sanitizer while matching structlog's processor signature
+        try:
+            # Work on a plain dict to avoid surprising side-effects
+            return _redact_and_sanitize(dict(event_dict))
+        except Exception:
+            return event_dict
+
+    Processor = Callable[
+        [Any, str, MutableMapping[str, Any]],
+        Mapping[str, Any] | str | bytes | bytearray | tuple[Any, ...],
+    ]
+
+    processors: list[Processor] = [
+        structlog.processors.add_log_level,  # type: ignore[arg-type]
+        structlog.processors.TimeStamper(fmt="iso"),  # type: ignore[arg-type]
+        merge_contextvars,  # type: ignore[arg-type]
+        _redact_processor,
+        structlog.processors.JSONRenderer(),  # type: ignore[arg-type]
     ]
 
     structlog.configure(

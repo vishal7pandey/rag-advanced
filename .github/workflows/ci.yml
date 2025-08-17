@@ -85,7 +85,14 @@ jobs:
 
       - name: Mypy
         shell: powershell
-        run: uv run mypy app
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: 'utf-8'
+        run: |
+          $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+          [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+          chcp 65001 > $null
+          uv run mypy app
 
       - name: Pytest (offline)
         shell: powershell

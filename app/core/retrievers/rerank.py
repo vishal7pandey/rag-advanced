@@ -241,7 +241,8 @@ def llm_rerank(
 
         # Parse scores
         try:
-            scores_text = response.choices[0].message.content.strip()
+            scores_text_raw = response.choices[0].message.content
+            scores_text = (scores_text_raw or "").strip()
             scores = json.loads(scores_text)
             if not isinstance(scores, list) or len(scores) != len(docs):
                 raise ValueError("Invalid scores format")

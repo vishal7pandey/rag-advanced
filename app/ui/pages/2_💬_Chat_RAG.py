@@ -89,6 +89,18 @@ def _microbatch(it, flush_ms: int = 40, max_chars: int = 400, on_tick=None):
             pass
 
 
+def _ensure_text(x: Any) -> str:
+    """Coerce a possibly list-like streamed output into a plain string.
+    Streamlit's write_stream may return a string or list of chunks.
+    """
+    try:
+        if isinstance(x, list):
+            return "".join(str(t or "") for t in x)
+        return str(x or "")
+    except Exception:
+        return str(x)
+
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "session_id" not in st.session_state:
@@ -256,6 +268,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
             _with_stats(_microbatch(it, flush_ms=40, max_chars=400, on_tick=_on_tick))
         )
         t_generate = _t.time() - _t0
+        streamed_text_s = _ensure_text(streamed_text)
         # Clear typing indicators once streaming completes
         try:
             timer_ph.empty()
@@ -276,18 +289,18 @@ if prompt := st.chat_input("Ask a question about your documents"):
         except Exception:
             pass
         # store assistant turn in memory
-        st.session_state.messages.append({"role": "assistant", "content": streamed_text or ""})
-        st.session_state.wmemory.add("assistant", streamed_text or "")
+        st.session_state.messages.append({"role": "assistant", "content": streamed_text_s})
+        st.session_state.wmemory.add("assistant", streamed_text_s)
         st.session_state.turn_count += 1
         # persist assistant message
         try:
-            add_message(st.session_state.session_id, "assistant", streamed_text or "")
+            add_message(st.session_state.session_id, "assistant", streamed_text_s)
         except Exception:
             pass
         # Compute metrics (lite) from streamed text and ctx
         mets = {}
         try:
-            mets = lite_metrics(streamed_text or "", ctx.get("retrieved", []))
+            mets = lite_metrics(streamed_text_s, ctx.get("retrieved", []))
         except Exception:
             mets = {}
         # include plan (without persona), memory, prompt snapshots
@@ -336,9 +349,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
                     )
                 else:
                     with st.spinner("Running RAGAS evaluation..."):
-                        rmetrics = eval_ragas(
-                            prompt, streamed_text or "", contexts, model=ragas_model
-                        )
+                        rmetrics = eval_ragas(prompt, streamed_text_s, contexts, model=ragas_model)
                         mets = {**mets, **rmetrics}
                     if not rmetrics:
                         st.toast("RAGAS returned no scores for this query.", icon="ℹ️")
@@ -355,12 +366,12 @@ if prompt := st.chat_input("Ask a question about your documents"):
                 "generation", "gpt-4o-mini"
             )
             prompt_text_for_tokens = str(ctx.get("prompt") or "")
-            pt, ct = estimate_tokens(model_for_cost, prompt_text_for_tokens, streamed_text or "")
+            pt, ct = estimate_tokens(model_for_cost, prompt_text_for_tokens, streamed_text_s)
             run_cost = float(estimate_tokens_cost(str(model_for_cost), pt, ct))
             # Update session running total
-            st.session_state["total_cost"] = (
-                float(st.session_state.get("total_cost", 0.0)) + run_cost
-            )
+            _prev_total_o = st.session_state.get("total_cost", 0.0)
+            _prev_total = float(cast(float | int | str, _prev_total_o))
+            st.session_state["total_cost"] = _prev_total + run_cost
         except Exception:
             pt, ct, run_cost = None, None, 0.0
         # Consolidate final human-facing card (no-answer gating + caveat)
@@ -392,7 +403,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
             else:
                 cav = caveat_text(mets if isinstance(mets, dict) else {})
                 final_md = render_markdown(
-                    answer_text=(streamed_text or "").strip(),
+                    answer_text=streamed_text_s.strip(),
                     citations_ui=cast(list[dict[str, Any]], citations_ui),
                     status_footer=footer_final,
                     bullets=None,
@@ -402,7 +413,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
             if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":
                 st.session_state.messages[-1]["content"] = final_md
         except Exception:
-            final_md = streamed_text or ""
+            final_md = streamed_text_s
         # Build machine envelope and log + persist inside metrics
         try:
             usage_obj = {}
@@ -416,7 +427,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
                 session_id=st.session_state.session_id,
                 run_id=None,
                 question=prompt,
-                answer_text=final_md or streamed_text or "",
+                answer_text=final_md or streamed_text_s,
                 plan=plan,
                 retrieved=retrieved_list,
                 citations_env=cast(list[dict[str, Any]], citations_env_out),
@@ -450,7 +461,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
                 session_id=st.session_state.session_id,
                 flow=plan.flow_name if "plan" in locals() else "auto",
                 question=prompt,
-                answer=final_md or streamed_text or "",
+                answer=final_md or streamed_text_s,
                 citations=cast(list[dict[str, Any]], citations_env_out),
                 timings={
                     "t_retrieve": float(ctx.get("t_retrieve") or 0.0),
@@ -501,11 +512,14 @@ if prompt := st.chat_input("Ask a question about your documents"):
                 f"Metrics: answer_relevancy_lite={mets.get('answer_relevancy_lite', 0):.3f}, context_precision_lite={mets.get('context_precision_lite', 0):.3f}, "
                 f"groundedness_lite={mets.get('groundedness_lite', 0):.3f}"
             )
+        tr_o = ctx.get("t_retrieve")
+        tr = float(cast(float | int | str, tr_o)) if tr_o is not None else 0.0
         timings_obj = {
-            "t_retrieve": float(ctx.get("t_retrieve") or 0.0),
+            "t_retrieve": tr,
             "t_generate": float(t_generate),
         }
-        t_seed = float(ctx.get("t_hyde_seed")) if ctx.get("t_hyde_seed") is not None else None
+        ths = ctx.get("t_hyde_seed")
+        t_seed = float(cast(float | int | str, ths)) if ths is not None else None
         t_subq = None
         if t_seed is not None:
             st.caption(
@@ -522,13 +536,15 @@ if prompt := st.chat_input("Ask a question about your documents"):
         # Cost footer
         try:
             if pt is not None and ct is not None:
+                _tc_o = st.session_state.get("total_cost", 0.0)
+                _tc = float(cast(float | int | str, _tc_o))
                 st.caption(
                     f"Cost: this run ≈ ${run_cost:.4f} (tokens: prompt={int(pt)}, completion={int(ct)}), "
-                    f"session total ≈ ${float(st.session_state.get('total_cost', 0.0)):.4f}"
+                    f"session total ≈ ${_tc:.4f}"
                 )
             else:
-                st.caption(
-                    f"Cost: this run ≈ ${run_cost:.4f}, session total ≈ ${float(st.session_state.get('total_cost', 0.0)):.4f}"
-                )
+                _tc_o2 = st.session_state.get("total_cost", 0.0)
+                _tc2 = float(cast(float | int | str, _tc_o2))
+                st.caption(f"Cost: this run ≈ ${run_cost:.4f}, session total ≈ ${_tc2:.4f}")
         except Exception:
             pass

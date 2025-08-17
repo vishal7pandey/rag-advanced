@@ -1,6 +1,6 @@
 from __future__ import annotations
 import re
-from typing import Iterable, List, Dict
+from typing import Iterable, List, Dict, Any
 import os
 
 
@@ -41,10 +41,10 @@ def make_snippet(raw: str, terms: List[str], max_len: int = 120) -> str:
     return (t[:max_len] + "…") if len(t) > max_len else t
 
 
-def build_snippet_rows(retrieved: Iterable[Dict], query_text: str) -> List[Dict]:
+def build_snippet_rows(retrieved: Iterable[object], query_text: str) -> List[Dict[str, Any]]:
     # naive termization; you can swap in a smarter keyword extractor later
     terms = [w for w in re.split(r"[^\w]+", query_text or "") if len(w) > 2][:6]
-    rows: List[Dict] = []
+    rows: List[Dict[str, Any]] = []
     for r in retrieved or []:
         try:
             meta = getattr(getattr(r, "chunk", object()), "meta", {}) or {}
