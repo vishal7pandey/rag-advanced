@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           uv --version
-          uv pip install -e ".[dev,offline]"
+          uv pip install -e ".[dev]"
 
       - name: Ruff
         shell: bash
@@ -69,13 +69,13 @@ jobs:
           irm https://astral.sh/uv/install.ps1 | iex
           "$env:USERPROFILE\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Install project (dev,offline)
+      - name: Install project (dev)
         shell: powershell
         env:
           UV_LINK_MODE: copy
         run: |
           uv --version
-          uv pip install -e ".[dev,offline]"
+          uv pip install -e ".[dev]"
 
       - name: Ruff
         shell: powershell
