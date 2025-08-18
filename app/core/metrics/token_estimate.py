@@ -7,7 +7,7 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     tiktoken = None  # type: ignore
 
-_MODEL_DEFAULT = "gpt-4o-mini"
+_MODEL_DEFAULT = "gpt--mini"
 
 
 def _encode_len(model: str, text: str) -> int:

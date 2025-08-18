@@ -10,7 +10,7 @@ def test_admin_settings_persist_roundtrip(tmp_path, monkeypatch):
     conn.close()
 
     values = {
-        "models.generation": "gpt-4o-mini",
+        "models.generation": "gpt--mini",
         "models.embedding": "text-embedding-3-small",
         "models.offline": True,
         "retrieval.top_k": 7,
@@ -20,7 +20,7 @@ def test_admin_settings_persist_roundtrip(tmp_path, monkeypatch):
         "memory.summarize": True,
         "flow.default": "hybrid",
         "metrics.ragas_enabled": False,
-        "metrics.ragas_model": "gpt-4o-mini",
+        "metrics.ragas_model": "gpt--mini",
     }
     set_settings(values, db_path=db)
     out = get_settings(db_path=db)

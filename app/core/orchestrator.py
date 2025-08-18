@@ -153,7 +153,7 @@ class Orchestrator:
         top_k = int(rcfg.get("top_k", 6))
         rerank = bool(rcfg.get("rerank", False))
         rerank_top_n = int(rcfg.get("rerank_top_n", 6))
-        gen_model = str(mcfg.get("generation", "gpt-4o-mini"))
+        gen_model = str(mcfg.get("generation", "gpt--mini"))
 
         triage = self._classify(question)
         notes: List[str] = []
@@ -230,7 +230,7 @@ class Orchestrator:
         plan = self.build_plan(question)
         mcfg = self.cfg.get("models", {})
         offline = str(mcfg.get("offline", "false")).lower() == "true"
-        gen_model = str(mcfg.get("generation", "gpt-4o-mini"))
+        gen_model = str(mcfg.get("generation", "gpt--mini"))
         emb_st = None
         emb_oa = str(mcfg.get("embedding", "text-embedding-3-small"))
         # Retrieve dynamic rerank and guardrails settings
@@ -369,7 +369,7 @@ class Orchestrator:
         plan = self.build_plan(question)
         mcfg = self.cfg.get("models", {})
         offline = str(mcfg.get("offline", "false")).lower() == "true"
-        gen_model = str(mcfg.get("generation", "gpt-4o-mini"))
+        gen_model = str(mcfg.get("generation", "gpt--mini"))
         emb_st = None
         emb_oa = str(mcfg.get("embedding", "text-embedding-3-small"))
         # Retrieve dynamic rerank and guardrails settings

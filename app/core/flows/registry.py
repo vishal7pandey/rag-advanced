@@ -29,7 +29,7 @@ def make_flow(
             rerank_top_n=cfg.get("rerank_top_n", 6),
             rerank_strategy=cfg.get("rerank_strategy", "cross_encoder"),
             mmr_lambda=cfg.get("mmr_lambda", 0.5),
-            llm_judge_model=cfg.get("llm_judge_model", "gpt-4o-mini"),
+            llm_judge_model=cfg.get("llm_judge_model", "gpt--mini"),
             guardrails_config=cfg.get("guardrails_config"),
         )
         return StandardFlow(offline, gen_model, emb_st, emb_oa, params)
@@ -46,7 +46,7 @@ def make_flow(
             rerank_top_n=cfg.get("rerank_top_n", 6),
             rerank_strategy=cfg.get("rerank_strategy", "cross_encoder"),
             mmr_lambda=cfg.get("mmr_lambda", 0.5),
-            llm_judge_model=cfg.get("llm_judge_model", "gpt-4o-mini"),
+            llm_judge_model=cfg.get("llm_judge_model", "gpt--mini"),
             guardrails_config=cfg.get("guardrails_config"),
             weight_bm25=float(w_bm25),
             weight_dense=float(w_dense),
@@ -63,7 +63,7 @@ def make_flow(
             rerank_top_n=cfg.get("rerank_top_n", 6),
             rerank_strategy=cfg.get("rerank_strategy", "cross_encoder"),
             mmr_lambda=cfg.get("mmr_lambda", 0.5),
-            llm_judge_model=cfg.get("llm_judge_model", "gpt-4o-mini"),
+            llm_judge_model=cfg.get("llm_judge_model", "gpt--mini"),
             guardrails_config=cfg.get("guardrails_config"),
         )
         return HyDEFlow(offline, gen_model, emb_st, emb_oa, hyde_params)
@@ -77,7 +77,7 @@ def make_flow(
             rerank_top_n=cfg.get("rerank_top_n", 6),
             rerank_strategy=cfg.get("rerank_strategy", "cross_encoder"),
             mmr_lambda=cfg.get("mmr_lambda", 0.5),
-            llm_judge_model=cfg.get("llm_judge_model", "gpt-4o-mini"),
+            llm_judge_model=cfg.get("llm_judge_model", "gpt--mini"),
             guardrails_config=cfg.get("guardrails_config"),
         )
         return MultiHopFlow(offline, gen_model, emb_st, emb_oa, multi_hop_params)
@@ -90,7 +90,7 @@ def make_flow(
             rerank_top_n=cfg.get("rerank_top_n", 6),
             rerank_strategy=cfg.get("rerank_strategy", "cross_encoder"),
             mmr_lambda=cfg.get("mmr_lambda", 0.5),
-            llm_judge_model=cfg.get("llm_judge_model", "gpt-4o-mini"),
+            llm_judge_model=cfg.get("llm_judge_model", "gpt--mini"),
             guardrails_config=cfg.get("guardrails_config"),
         )
         return RaptorFlow(offline, gen_model, emb_st, emb_oa, rparams)

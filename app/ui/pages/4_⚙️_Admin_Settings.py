@@ -3,7 +3,14 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from app.core.utils import load_config, pretty_json
-from app.core.storage import init_db, get_settings, set_settings
+from app.core.storage import init_db, get_settings, set_settings, get_counts
+from app.core.indexer import (
+    reembed_changed_only,
+    build_faiss,
+    purge_index,
+    full_purge,
+)
+from app.core.embeddings import effective_embedder_id
 
 load_dotenv()
 
@@ -30,7 +37,7 @@ gen_provider = st.selectbox(
 )
 gen_model = st.text_input(
     "Default model (OpenAI)",
-    str(saved.get("generator.model", cfg.get("generator", {}).get("model", "gpt-4o-mini"))),
+    str(saved.get("generator.model", cfg.get("generator", {}).get("model", "gpt--mini"))),
 )
 gen_ollama_model = st.text_input(
     "Ollama model",
@@ -115,11 +122,11 @@ else:
 if rerank_strategy == "llm_judge":
     llm_judge_model = st.text_input(
         "LLM-judge model",
-        str(saved.get("retrieval.llm_judge_model", "gpt-4o-mini")),
+        str(saved.get("retrieval.llm_judge_model", "gpt--mini")),
         help="OpenAI model for relevance scoring",
     )
 else:
-    llm_judge_model = "gpt-4o-mini"
+    llm_judge_model = "gpt--mini"
 
 # Legacy rerank toggle for backward compatibility
 rerank = rerank_strategy != "none"
@@ -210,9 +217,73 @@ semantic_chunking = st.toggle(
     ),
 )
 
+# Index maintenance actions
+st.subheader("Index Maintenance")
+counts = get_counts()
+eff_id = effective_embedder_id(bool(offline), emb, emb)
+st.caption(
+    f"Effective embedder: {eff_id} · Counts — docs: {counts.get('documents', 0)}, chunks: {counts.get('chunks', 0)}, indices: {counts.get('indices', 0)}"
+)
+
+c1, c2, c3 = st.columns(3)
+with c1:
+    if st.button("Re-embed missing", help="Compute embeddings only for uncached chunks"):
+        with st.spinner("Re-embedding (only missing)…"):
+            res = reembed_changed_only(bool(offline), emb, emb)
+        st.success(
+            f"New embeddings: {res.get('new_embeddings', 0)}, skipped: {res.get('skipped', 0)}"
+        )
+        st.json(res)
+with c2:
+    if st.button("Build index", help="Build FAISS/NumPy index for the current embedder"):
+        with st.spinner("Building index…"):
+            try:
+                out_path, dim = build_faiss(bool(offline), emb, emb)
+                st.success(f"Built index {out_path.name} (dim={dim})")
+            except Exception as e:
+                st.error(f"Failed to build index: {e}")
+with c3:
+    if st.button(
+        "Purge current index & cache",
+        type="secondary",
+        help="Remove FAISS/NumPy index file(s) and embedding cache for the current embedder",
+    ):
+        with st.spinner("Purging index & cache…"):
+            res = purge_index(bool(offline), emb, emb)
+        st.warning(
+            f"Removed index: {bool(res.get('removed_index'))}, cache files: {res.get('removed_cache_files', 0)}"
+        )
+        st.json(res)
+
+st.write("")
+st.markdown("**Danger zone: Full Purge**")
+col_a, col_b, col_c, col_d = st.columns([1, 1, 2, 1])
+with col_a:
+    p_uploads = st.checkbox("Include uploads", value=False)
+with col_b:
+    p_runs = st.checkbox("Include runs", value=False)
+with col_c:
+    p_msgs = st.checkbox("Include messages & memory", value=False)
+with col_d:
+    confirm = st.checkbox("Confirm", value=False)
+
+if st.button("Full Purge", type="primary", disabled=not confirm):
+    with st.spinner("Deleting indices, caches, and selected data…"):
+        summary = full_purge(
+            purge_uploads=bool(p_uploads),
+            purge_runs=bool(p_runs),
+            purge_messages=bool(p_msgs),
+        )
+    st.success("Full purge complete.")
+    st.json(summary)
+    new_counts = get_counts()
+    st.caption(
+        f"Post-purge counts — docs: {new_counts.get('documents', 0)}, chunks: {new_counts.get('chunks', 0)}, indices: {new_counts.get('indices', 0)}"
+    )
+
 st.subheader("Metrics (RAGAS)")
 ragas_enabled = st.toggle("Enable RAGAS metrics", bool(saved.get("metrics.ragas_enabled", False)))
-ragas_model = st.text_input("RAGAS model (OpenAI)", saved.get("metrics.ragas_model", "gpt-4o-mini"))
+ragas_model = st.text_input("RAGAS model (OpenAI)", saved.get("metrics.ragas_model", "gpt--mini"))
 
 st.subheader("Flow Config Snapshot")
 st.code(pretty_json(cfg), language="json")

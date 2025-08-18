@@ -11,5 +11,5 @@ def test_lite_metrics_bounds():
 
 
 def test_token_cost_positive():
-    c = estimate_tokens_cost("gpt-4o-mini", prompt_tokens=1000, completion_tokens=500)
+    c = estimate_tokens_cost("gpt--mini", prompt_tokens=1000, completion_tokens=500)
     assert c > 0.0

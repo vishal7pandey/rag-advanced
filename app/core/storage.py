@@ -91,6 +91,33 @@ def init_db(db_path: Optional[Path] = None) -> None:
         conn.close()
 
 
+def get_counts(db_path: Optional[Path] = None) -> dict:
+    """Return basic counts for index health: documents, chunks, indices.
+    Safe to call even if tables are empty.
+    """
+    conn = connect(db_path)
+    try:
+        out = {"documents": 0, "chunks": 0, "indices": 0}
+        try:
+            cur = conn.execute("SELECT COUNT(*) FROM documents")
+            out["documents"] = int(cur.fetchone()[0])
+        except Exception:
+            pass
+        try:
+            cur = conn.execute("SELECT COUNT(*) FROM chunks")
+            out["chunks"] = int(cur.fetchone()[0])
+        except Exception:
+            pass
+        try:
+            cur = conn.execute("SELECT COUNT(*) FROM indices")
+            out["indices"] = int(cur.fetchone()[0])
+        except Exception:
+            pass
+        return out
+    finally:
+        conn.close()
+
+
 def get_recent_runs(limit: int = 50, db_path: Optional[Path] = None) -> list[dict]:
     conn = connect(db_path)
     try:

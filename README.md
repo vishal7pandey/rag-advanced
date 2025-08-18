@@ -142,6 +142,7 @@ scripts/setup.bat
   - Streaming: answers stream token-by-token. The UI shows micro-batched updates, a live elapsed timer, and status badges; token/cost estimates are computed post-stream.
 - Runs & Metrics: see recent runs, metrics, and timings.
 - Admin Settings: toggle offline, models, retrieval defaults, memory, RAGAS.
+  - Index Maintenance: Re-embed missing, Build index, Purge current index & cache, and a guarded Full Purge (Everything). Mirrors maintenance actions from Upload & Index for convenience.
   - Retrieval extras: configure Recency filter (days) and Recency decay (λ) to prefer fresher chunks.
 
 Placeholders (add your screenshots under `/docs/img/`):
@@ -463,11 +464,12 @@ Pick one:
   - Removes the FAISS index and embedding cache files for the active embedding tag.
   - Cleans index metadata so a fresh build can proceed cleanly.
   - Use when models/settings change or index seems stale.
+  - Available in UI via Upload & Index and Admin Settings → Index Maintenance.
 
 - **Full Purge (Everything)** (`app.core.indexer.full_purge()`)
   - Deletes all documents/chunks/indices and all embedding cache files.
   - Optional checkboxes allow deleting uploaded files (`data/uploads/`), runs/metrics, and chat history (messages + memory).
-  - UI requires typing `DELETE` to confirm.
+  - UI requires an explicit Confirm checkbox before enabling the button.
 
 - **Re-embed Changed Only**
   - Efficiently updates only new/changed chunks based on content hashing; avoids reprocessing unchanged text.

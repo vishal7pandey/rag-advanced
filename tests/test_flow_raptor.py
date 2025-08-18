@@ -7,7 +7,7 @@ from app.core.types import AnswerBundle
 
 def test_make_flow_creates_raptor_flow():
     cfg = {"levels": 2, "fanout": 4, "top_k_final": 7, "rerank": False}
-    flow = make_flow("raptor", False, "gpt-4o-mini", None, None, cfg)
+    flow = make_flow("raptor", False, "gpt--mini", None, None, cfg)
     assert isinstance(flow, RaptorFlow)
     assert flow.params.levels == 2
     assert flow.params.top_k_final == 7
@@ -25,7 +25,7 @@ def test_raptor_flow_run(mock_build_prompt, mock_generate, mock_retrieve):
         "citations": [],
         "usage": {"prompt_tokens": 10, "completion_tokens": 5},
     }
-    flow = RaptorFlow(False, "gpt-4o-mini", None, None, RaptorParams())
+    flow = RaptorFlow(False, "gpt--mini", None, None, RaptorParams())
     out = flow.run("Q?", {})
     assert isinstance(out, AnswerBundle)
     assert out.answer_md == "A"
@@ -51,7 +51,7 @@ def test_raptor_flow_run_with_rerank(mock_build_prompt, mock_generate, mock_retr
     }
     # Enable rerank
     params = RaptorParams(rerank=True, rerank_top_n=2)
-    flow = RaptorFlow(False, "gpt-4o-mini", None, None, params)
+    flow = RaptorFlow(False, "gpt--mini", None, None, params)
     out = flow.run("Q?", {})
     assert isinstance(out, AnswerBundle)
     # Metrics should include delta precision when rerank is on

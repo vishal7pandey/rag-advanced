@@ -29,7 +29,7 @@ def generate_answer(prompt: str, model: str, offline: bool, docs: List[Retrieved
     gcfg = cfg.get("generator", {})
     provider = str(gcfg.get("provider", "openai")).lower()
     timeout_s = float(gcfg.get("timeout_s", 30))
-    model_name = model or str(gcfg.get("model", "gpt-4o-mini"))
+    model_name = model or str(gcfg.get("model", "gpt--mini"))
 
     # Provider: stub or offline enforced
     if offline or provider == "stub":
@@ -55,7 +55,7 @@ def stream_answer(
     gcfg = cfg.get("generator", {})
     provider = str(gcfg.get("provider", "openai")).lower()
     timeout_s = float(gcfg.get("timeout_s", 30))
-    model_name = model or str(gcfg.get("model", "gpt-4o-mini"))
+    model_name = model or str(gcfg.get("model", "gpt--mini"))
 
     # Provider: stub or offline enforced
     if offline or provider == "stub":

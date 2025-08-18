@@ -31,7 +31,7 @@ cfg = load_config()
 # Header badges: Online/Offline, Provider, Model
 _has_key = bool((_os.getenv("OPENAI_API_KEY") or "").strip())
 _provider = "OpenAI" if _has_key else "Offline"
-_model = cfg.get("models", {}).get("generation", "gpt-4o-mini")
+_model = cfg.get("models", {}).get("generation", "gpt--mini")
 st.caption(f"{'🟢 Online' if _has_key else '🔒 Offline'} • Provider: {_provider} • Model: {_model}")
 # Auto mode: Orchestrator decides retrieval/generation; memory from config
 enable_memory = True
@@ -363,7 +363,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
         run_cost: float = 0.0
         try:
             model_for_cost = getattr(plan.generation, "model", None) or cfg.get("models", {}).get(
-                "generation", "gpt-4o-mini"
+                "generation", "gpt--mini"
             )
             prompt_text_for_tokens = str(ctx.get("prompt") or "")
             pt, ct = estimate_tokens(model_for_cost, prompt_text_for_tokens, streamed_text_s)

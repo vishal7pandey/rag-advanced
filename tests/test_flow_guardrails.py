@@ -75,7 +75,7 @@ def test_hyde_auto_skip(mock_standard_flow):
 
     # Create HyDE flow with auto mode enabled
     params = HyDEParams(auto_mode=True)
-    flow = HyDEFlow(offline=True, gen_model="gpt-4o-mini", emb_st=None, emb_oa=None, params=params)
+    flow = HyDEFlow(offline=True, gen_model="gpt--mini", emb_st=None, emb_oa=None, params=params)
 
     # Test with short query that should be skipped
     result = flow.run("AI", {})
@@ -101,7 +101,7 @@ def test_multi_hop_auto_skip(mock_standard_flow):
     # Create Multi-hop flow with auto mode enabled
     params = MultiHopParams(auto_mode=True)
     flow = MultiHopFlow(
-        offline=True, gen_model="gpt-4o-mini", emb_st=None, emb_oa=None, params=params
+        offline=True, gen_model="gpt--mini", emb_st=None, emb_oa=None, params=params
     )
 
     # Test with keyword query that should be skipped
@@ -120,7 +120,7 @@ def test_hyde_auto_mode_disabled(mock_standard_flow):
     """Test HyDE flow with auto mode disabled."""
     # Create HyDE flow with auto mode disabled
     params = HyDEParams(auto_mode=False)
-    flow = HyDEFlow(offline=True, gen_model="gpt-4o-mini", emb_st=None, emb_oa=None, params=params)
+    flow = HyDEFlow(offline=True, gen_model="gpt--mini", emb_st=None, emb_oa=None, params=params)
 
     # Mock the HyDE seed generation to avoid actual OpenAI calls
     with patch("app.core.flows.hyde._generate_hyde_seed") as mock_seed:

@@ -199,7 +199,7 @@ def mmr_rerank(
 
 
 def llm_rerank(
-    query: str, docs: List[RetrievedDoc], model: str = "gpt-4o-mini", top_n: int | None = None
+    query: str, docs: List[RetrievedDoc], model: str = "gpt--mini", top_n: int | None = None
 ) -> Tuple[List[RetrievedDoc], dict]:
     """LLM-judge reranker using OpenAI for scoring relevance.
 
@@ -292,8 +292,8 @@ def _estimate_cost(model: str, tokens: int) -> float:
     """Rough cost estimation for OpenAI models."""
     # Approximate pricing (as of 2024)
     pricing = {
-        "gpt-4o-mini": 0.00015 / 1000,  # $0.15 per 1M tokens
-        "gpt-4o": 0.005 / 1000,  # $5 per 1M tokens
+        "gpt--mini": 0.00015 / 1000,  # $0.15 per 1M tokens
+        "gpt-": 0.005 / 1000,  # $5 per 1M tokens
         "gpt-3.5-turbo": 0.001 / 1000,  # $1 per 1M tokens
     }
 

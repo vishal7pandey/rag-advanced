@@ -25,7 +25,7 @@ class RaptorParams:
     guardrails_config: Dict | None = None
     rerank_strategy: str = "cross_encoder"  # none|mmr|cross_encoder|llm_judge
     mmr_lambda: float = 0.5
-    llm_judge_model: str = "gpt-4o-mini"
+    llm_judge_model: str = "gpt--mini"
 
 
 class RaptorFlow(Flow):

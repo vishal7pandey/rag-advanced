@@ -21,7 +21,7 @@ class StandardParams:
     rerank_top_n: int = 6
     rerank_strategy: str = "mmr"  # one of: none|mmr|cross_encoder|llm_judge
     mmr_lambda: float = 0.5
-    llm_judge_model: str = "gpt-4o-mini"
+    llm_judge_model: str = "gpt--mini"
     guardrails_config: Dict | None = None
 
 
