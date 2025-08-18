@@ -554,12 +554,24 @@ def build_faiss(
 def purge_index(offline: bool, emb_model_st: str | None, emb_model_oa: str | None) -> dict:
     """Drop FAISS index files for current model, clear embedding cache for that model, and remove indices metadata."""
     tag = _model_tag(offline, emb_model_st, emb_model_oa)
-    # Remove FAISS file(s) for tag
+    # Remove FAISS/NumPy index file(s) for tag
     faiss_path = INDEX_DIR / f"faiss_{tag}.faiss"
+    np_path = INDEX_DIR / f"np_{tag}.npz"
     removed_index = False
+    # Try remove FAISS index
     if faiss_path.exists():
-        faiss_path.unlink()
-        removed_index = True
+        try:
+            faiss_path.unlink()
+            removed_index = True
+        except Exception:
+            pass
+    # Try remove NumPy fallback index
+    if np_path.exists():
+        try:
+            np_path.unlink()
+            removed_index = True
+        except Exception:
+            pass
     # Remove cache dir for tag
     cache_dir = EMB_CACHE_DIR / tag
     removed_cache_files = 0
@@ -574,10 +586,13 @@ def purge_index(offline: bool, emb_model_st: str | None, emb_model_oa: str | Non
             cache_dir.rmdir()
         except Exception:
             pass
-    # Clean indices metadata
+    # Clean indices metadata (both FAISS and NumPy tags)
     conn = connect()
     try:
-        conn.execute("DELETE FROM indices WHERE index_name=?", (f"faiss_{tag}",))
+        conn.execute(
+            "DELETE FROM indices WHERE index_name IN (?, ?)",
+            (f"faiss_{tag}", f"np_{tag}"),
+        )
         conn.commit()
     finally:
         conn.close()

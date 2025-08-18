@@ -90,7 +90,7 @@ class StandardFlow(Flow):
         return head, info
 
     def run(self, question: str, session_state: Dict) -> AnswerBundle:
-        t0 = time.time()
+        t0 = time.perf_counter()
         dense_cfg = DenseConfig(
             top_k=self.params.top_k,
             offline=self.offline,
@@ -112,7 +112,9 @@ class StandardFlow(Flow):
                 docs, rr_info = self._apply_rerank(question, docs)
             finally:
                 self.params.rerank_top_n = old_rtn
-        t_retrieve = time.time() - t0
+        t_retrieve = time.perf_counter() - t0
+        if t_retrieve <= 0:
+            t_retrieve = 1e-6
         # no rerank in minimal version
         mem_text = ""
         if isinstance(session_state, dict):
@@ -128,9 +130,11 @@ class StandardFlow(Flow):
         prompt = build_answer_prompt(
             question, memory=mem_text, docs=docs, format_hint=fmt_hint, persona_hint=per_hint
         )
-        t1 = time.time()
+        t1 = time.perf_counter()
         out = generate_answer(prompt, self.gen_model, self.offline, docs)
-        t_generate = time.time() - t1
+        t_generate = time.perf_counter() - t1
+        if t_generate <= 0:
+            t_generate = 1e-6
         timings = {"t_retrieve": t_retrieve, "t_generate": t_generate}
         # Metrics and debug enrichment
         mets = lite_metrics(out["answer_md"], docs)
@@ -189,7 +193,7 @@ class StandardFlow(Flow):
         )
 
     def run_stream(self, question: str, session_state: Dict):
-        t0 = time.time()
+        t0 = time.perf_counter()
         dense_cfg = DenseConfig(
             top_k=self.params.top_k,
             offline=self.offline,
@@ -207,7 +211,9 @@ class StandardFlow(Flow):
                 docs, _ = self._apply_rerank(question, docs)
             finally:
                 self.params.rerank_top_n = old_rtn
-        t_retrieve = time.time() - t0
+        t_retrieve = time.perf_counter() - t0
+        if t_retrieve <= 0:
+            t_retrieve = 1e-6
         mem_text = ""
         if isinstance(session_state, dict):
             mem_text = session_state.get("memory_text", "")

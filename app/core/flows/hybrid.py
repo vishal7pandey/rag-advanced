@@ -156,7 +156,7 @@ class HybridFlow(Flow):
             return []
 
     def run(self, question: str, session_state: Dict) -> AnswerBundle:
-        t0 = time.time()
+        t0 = time.perf_counter()
         # Multi-query expansion: base + rewrites
         queries: List[str] = [question]
         extra_n = max(0, int(self.params.multi_query_n) - 1)
@@ -211,7 +211,9 @@ class HybridFlow(Flow):
                 fused, rr_info = self._apply_rerank(question, fused)
             finally:
                 self.params.rerank_top_n = old_rtn
-        t_retrieve = time.time() - t0
+        t_retrieve = time.perf_counter() - t0
+        if t_retrieve <= 0:
+            t_retrieve = 1e-6
         mem_text = ""
         if isinstance(session_state, dict):
             mem_text = session_state.get("memory_text", "")
@@ -226,9 +228,11 @@ class HybridFlow(Flow):
         prompt = build_answer_prompt(
             question, memory=mem_text, docs=fused, format_hint=fmt_hint, persona_hint=per_hint
         )
-        t1 = time.time()
+        t1 = time.perf_counter()
         out = generate_answer(prompt, self.gen_model, self.offline, fused)
-        t_generate = time.time() - t1
+        t_generate = time.perf_counter() - t1
+        if t_generate <= 0:
+            t_generate = 1e-6
         timings = {"t_retrieve": t_retrieve, "t_generate": t_generate}
         # Metrics and debug enrichment
         mets = lite_metrics(out["answer_md"], fused)
@@ -285,7 +289,7 @@ class HybridFlow(Flow):
         )
 
     def run_stream(self, question: str, session_state: Dict):
-        t0 = time.time()
+        t0 = time.perf_counter()
         queries: List[str] = [question]
         extra_n = max(0, int(self.params.multi_query_n) - 1)
         if extra_n > 0:
@@ -334,7 +338,9 @@ class HybridFlow(Flow):
                 fused, _ = self._apply_rerank(question, fused)
             finally:
                 self.params.rerank_top_n = old_rtn
-        t_retrieve = time.time() - t0
+        t_retrieve = time.perf_counter() - t0
+        if t_retrieve <= 0:
+            t_retrieve = 1e-6
         mem_text = ""
         if isinstance(session_state, dict):
             mem_text = session_state.get("memory_text", "")
